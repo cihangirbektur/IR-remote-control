@@ -1,0 +1,63 @@
+#include <IRremote.hpp>
+
+#define IR_RECEIVE_PIN 2
+
+int led1 = 8;
+int led2 = 9;
+int led3 = 10;
+int led4 = 11;
+
+// Senin verdiğin sıraya göre
+#define TUS_1 0xFFA25D
+#define TUS_2 0xFF629D
+#define TUS_3 0xFFE21D
+#define TUS_4 0xFF22DD
+#define TUS_5 0xFF02FD   // Eğer 5'e basınca farklı kod gelirse bunu değiştir
+
+void setup() {
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+  pinMode(led3, OUTPUT);
+  pinMode(led4, OUTPUT);
+
+  Serial.begin(9600);
+  IrReceiver.begin(IR_RECEIVE_PIN, ENABLE_LED_FEEDBACK);
+  Serial.println("Sistem hazir.");
+}
+
+void loop() {
+  if (IrReceiver.decode()) {
+    uint32_t gelenKod = bitreverse32Bit(IrReceiver.decodedIRData.decodedRawData);
+
+    if (gelenKod != 0x0) {
+      Serial.print("Gelen kod: 0x");
+      Serial.println(gelenKod, HEX);
+
+      if (gelenKod == TUS_1) {
+        digitalWrite(led1, !digitalRead(led1));
+        Serial.println("LED 1 degisti");
+      }
+      else if (gelenKod == TUS_2) {
+        digitalWrite(led2, !digitalRead(led2));
+        Serial.println("LED 2 degisti");
+      }
+      else if (gelenKod == TUS_3) {
+        digitalWrite(led3, !digitalRead(led3));
+        Serial.println("LED 3 degisti");
+      }
+      else if (gelenKod == TUS_4) {
+        digitalWrite(led4, !digitalRead(led4));
+        Serial.println("LED 4 degisti");
+      }
+      else if (gelenKod == TUS_5) {
+        digitalWrite(led1, LOW);
+        digitalWrite(led2, LOW);
+        digitalWrite(led3, LOW);
+        digitalWrite(led4, LOW);
+        Serial.println("Tum LED'ler kapandi");
+      }
+    }
+
+    IrReceiver.resume();
+  }
+}
